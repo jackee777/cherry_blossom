@@ -112,25 +112,14 @@ from keras.wrappers.scikit_learn import KerasRegressor
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 
-other_data_train = pd.DataFrame()
-other_data_test = pd.DataFrame()
-for year in y_list:
-    Djs = np.array(s_list) + np.array(Dj_list)
-    Djs_end = np.array(s_list) + np.array(d_list)
-    if year == 1966 or year == 1971 or year == 1985 or year == 1994 or year == 2008:
-        other_data_test = other_data_test.append(cherry_data.ix[Djs[year - 1961]:Djs_end[year - 1961] - ave_bloom, \
-                                                 ["最高気温", "現地平均気圧"]].sum(), ignore_index = True)
-    else:
-        other_data_train = other_data_train.append(cherry_data.ix[Djs[year - 1961]:Djs_end[year - 1961] - ave_bloom, \
-                                                   ["最高気温", "現地平均気圧"]].sum(), ignore_index=True)
 
 def reg_model():
     model = Sequential()
     model.add(Dense(20, input_dim=3, activation='relu', init='normal'))
-    model.add(Dense(40, activation='relu', init='he_normal'))
+    model.add(Dense(40, activation='relu', init='normal'))
     #model.add(Dropout(0.2))
     #model.add(Dense(50, activation='relu', init='normal'))
-    model.add(Dense(20, activation='relu', init='he_normal'))
+    model.add(Dense(20, activation='relu', init='normal'))
     #model.add(BatchNormalization())
     model.add(Dropout(0.2))
     model.add(Dense(1))
@@ -159,7 +148,7 @@ test_data = (test_data - train_data.quantile(0.5).values) / \
 train = (ans_list_train - np.min(ans_list_train)) / (np.max(ans_list_train) - np.min(ans_list_train))
 test = (ans_list_test - np.min(ans_list_train)) / (np.max(ans_list_train) - np.min(ans_list_train))
 """
-estimator = KerasRegressor(build_fn=reg_model, epochs=200, batch_size=1)
+estimator = KerasRegressor(build_fn=reg_model, epochs=300, batch_size=1)
 estimator.fit(pd.concat([pd.DataFrame(data[opt_Ea - 5, :]), other_data_train], axis=1).values, ans_list_train)
 
 

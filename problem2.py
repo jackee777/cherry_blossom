@@ -10,13 +10,6 @@ clf = linear_model.LinearRegression()
 cherry_data = pd.read_csv('tokyo.csv')
 bloom_data = pd.read_csv('blooming.csv')
 
-"""
-test = cherry_data.query("year == 1966|year == 1971|year == 1985|year == 1994|year == 2008")
-train = cherry_data.loc[set(cherry_data.index) - set(test.index), :]
-ans_test = bloom_data.query("year == 1966|year == 1971|year == 1985|year == 1994|year == 2008")
-ans_train = bloom_data.loc[set(bloom_data.index) - set(ans_test.index), :]
-"""
-
 s_year = 1961
 e_year = 2017
 y_list = []
@@ -25,6 +18,7 @@ d_list = []
 Dj_list = []
 ans_list_train = []
 ans_list_test = []
+ans_list = []
 for year in range(s_year, e_year + 1):
     start = cherry_data.query("year=="+str(year)+"&month=="+str(1)+"&day=="+str(1)).index[0]
     march_end = cherry_data.query("year=="+str(year)+"&month==" + str(3) + "&day==" + str(31)).index[0]
@@ -39,6 +33,7 @@ for year in range(s_year, e_year + 1):
         ans_list_test.append(int(end - start))
     else:
         ans_list_train.append(int(end - start))
+    ans_list.append(int(end - start))
     y_list.append(year)
     s_list.append(start)
     d_list.append(march_d)
@@ -103,7 +98,6 @@ for year in y_list:
             DTS = DTS + np.exp((opt_Ea * (Tij - Ts)) / (R * Tij * Ts))
         DTSj_list_test.append(int(DTS))
 
-
 clf.fit(pd.DataFrame(data[opt_Ea - 5, :]), pd.DataFrame(ans_list_train))
 print("coef ", clf.coef_)
 print("intercept ", clf.intercept_)
@@ -129,3 +123,26 @@ print("coef ", clf.coef_)
 print("intercept ", clf.intercept_)
 print("score", clf.score(pd.concat([pd.DataFrame(DTSj_list_test), other_data_test], axis=1), \
                          pd.DataFrame(ans_list_test)))
+
+#program 4
+DTSj_list = []
+for year in y_list:
+    DTS = 0
+    for i in range(Dj_list[year - s_year], d_list[year - s_year]):
+        Tij = cherry_data.ix[s_list[year - s_year] + i, "平均気温"] + 273.15
+        DTS = DTS + np.exp((opt_Ea * (Tij - Ts)) / (R * Tij * Ts))
+    DTSj_list.append(int(DTS))
+
+clf.fit(pd.DataFrame(DTSj_list),pd.DataFrame(y_list))
+print("coef ", clf.coef_)
+clf.fit(pd.DataFrame(ans_list),pd.DataFrame(y_list))
+print("coef ", clf.coef_)
+plt.plot(y_list, DTSj_list, color="#00FF00", label = "Dj")
+plt.plot(y_list, ans_list, color="#FF0000", label = "BDj")
+plt.title("Dj and BDj")
+plt.xlabel("year")
+plt.ylabel("date from Jan. 1")
+plt.legend()
+filename = "output4.png"
+plt.savefig(filename)
+plt.show()
